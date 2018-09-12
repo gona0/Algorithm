@@ -37,7 +37,7 @@ void postorder(char a){
 	postorder(p[a - 'A']->right);
 	printf("%c", a);
 }
-
+//
 int main(void) {
 	int N;
 	char a[3];
