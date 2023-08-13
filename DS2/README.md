@@ -1,2 +1,2 @@
 # DATAMANIM
-https://www.datamanim.com/dataset/03\_dataq/typeone.html
+https://www.datamanim.com/dataset/03_dataq/typeone.html
