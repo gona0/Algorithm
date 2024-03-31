@@ -5,11 +5,10 @@ rkt(로켓) OCI표준을 준수했음.
 Docker CRI표준을 지원하려고 만든 것은 아니다. 도커는 CRI가 나오기 전에 나와버렸어..
 
 k8s는 임시방편인 dockershim을 도입하여 그런 도커를 지원
-> k8s 1.20부터 도커 지원 중단   
-> k8s 1.24부터 도커심 기본 지원도 중단(도커심 때문에 배포 속도가 느려지고 유지 관리자에게도 큰 부담)   
-> podman이나 cri-o나... 를 런타임으로 사용하셈   
-> 하지만 도커에서 만든 컨테이너 이미지를 등록하고 실행하는 것은 가능. 도커는 OCI와 호환되는 이미지기 때문에.
->
+> - k8s 1.20부터 도커 지원 중단   
+> - k8s 1.24부터 도커심 기본 지원도 중단(도커심 때문에 배포 속도가 느려지고 유지 관리자에게도 큰 부담)   
+> - podman이나 cri-o나... 를 런타임으로 사용하셈   
+> - 하지만 도커에서 만든 컨테이너 이미지를 등록하고 실행하는 것은 가능. 도커는 OCI와 호환되는 이미지기 때문에.   
 > => 도커를 개발 도구로 계속 사용은 가능하다!
 
 뭐 사용? CRI 인터페이스 소개 (Container Runtime Interface)
@@ -61,3 +60,38 @@ $ crictl exec -it asdfasdfasdfasdfasdf ls
 $ crictl logs asdfasdfasdf
 $ crictl pods    #도커에서는 이거 안됨ㅋㅋ
 ```
+
+- - -
+
+# 13. ETCD For Beginners(엣씨디)
+
+## What is ETCD
+> ETCD is a distributed reliable key-value store that is Simple, Secure & Fast   
+> 분산되고 신뢰할 수 있는 k-v스토어입니다. 단순하고 안전하며 신속하죠.   
+> k-v 형식과 데이터베이스 형식 차이
+
+Install ETCD(2:50)
+1. Download Binaries   
+`$ curl -L https://github.com/etcd-io/etcd/releases/download/v3.3.11/etcd-v3.3.11-linux-amd64.tar.gz -o etcd-v3.3.11-linux-amd64.tar.gz`
+3. Extract   
+`$ tar zxvf etcd-v3.3.11-linux-amd64.tar.gz`
+5. Run ETCD Service   
+`$ ./etcd`
+
+  default port: 2379 
+
+CLI
+```
+$ ./etcdctl    #help
+$ ./etcdctl set key1 value1
+$ ./etcdctl get key1
+```
+
+ETCDCTL Versions
+  etcdctl은 2개의 api 버전을 가진다. v2와 v3를 가지는데 내가 어떤 버전을 사용하고 싶은지에 따라 version확인 필수
+
+```  
+$ ./etcdctl --version
+$ ETCDCTL_API=3 ./etcdctl version
+```
+
