@@ -95,3 +95,93 @@ $ ./etcdctl --version
 $ ETCDCTL_API=3 ./etcdctl version
 ```
 
+- - -
+# 14. ETCD in k8s
+
+kubectl을 사용할 때 얻게 되는 모든 정보는 ETCD server에서 얻을 수 있다.   
+etcd listen server 기본 port: 2379
+
+kubeadm을 통해 설치할 수 있다.
+```
+$ kubectl get pods -n kube-system
+$ kubectl exec etcd-master -n kube-system etcdctl get / --prefix -keys-only
+```
+
+etcd.service 에 다른 master node들의 정보를 넣어둬야 한다. (etcd server의 서로의 위치를 알 수 있게)
+
+
+- - - 
+# 16. kube-api server
+
+primary management component in k8s(주요 관리 구성 요소)   
+kube-apiserver는 클러스터에서 변경을 위해 수행해야하는 모든 작업의 중심에 있다.   
+클러스터를 구성한다면 master node에서 kube-api를 다운로드하고 구성하세요.   
+
+user -(`kubectl get nodes`)-> kube-apiserver -> ETCD CLUSTER 에서 데이터를 회수해 요청된 정보로 응답
+
+  1. Authenticate User
+  2. Validate Request
+  3. Retrieve data
+  4. Update ETCD
+  5. Scheduler
+  6. Kubelet
+
+View api-server options - kubeadm
+```
+$ cat /etc/kubernetes/manifests/kube-apiserver.yaml
+```
+
+View api-server options
+```
+$ cat /etc/systemd/system/kube-apiserver.service
+$ ps -aux | grep kube-apiserver
+```
+
+
+- - - 
+# 17. Kube Controller Manager
+
+k8s에서 다양한 controller를 관리   
+kubectl controller manager를 설치하면 다양한 controller가 설치된다.
+
+Node-Controller  
+Watch status   
+Remediate situation   
+(Node-Controller -> kube-apiserver)   
+아래는 설치 시 옵션
+> Node Monitor Period = 5s (hb를 체크)   
+> Node Monitor Grace Period = 40s   
+> POD Eviction Timeout = 5m
+
+Replication-Controller
+  원하는 수의 파드가 항상 존재하도록
+  
+등등 Controller
+
+
+- - - 
+# 18. Kube Scheculer
+
+실제로 파드를 노드에 넣는 것은 kubelet의 역할   
+스케쥴러는 어떤 파드를 어디에 넣을지만 결정 (특정 기준에 따라... chart에 적어둠)   
+(리소스 요구사항, 특정 응용에 적합한 노드 등)
+  
+  1. Filter Nodes
+  2. Rank Nodes: 스케쥴러가 우선순위 함수를 통해 점수를 매김. (ex 설치 후 남은 리소스)
+  
+```
+$ cat /etc/kubernetes/manifests/kube-scheduler.yaml
+$ pa -aux | grep kube-scheduler 
+```
+
+
+- - - 
+# 19. Kubelet
+
+파드의 상태와 컨테이너를 계속 모니터링하고 kube API에 보고함   
+kubeadm 은 kubelet을 자동으로 설치하지 않음   
+워커노드에 수동으로 설치   
+
+```
+$ pa -aux | grep kubelet
+```
