@@ -21,7 +21,7 @@ containerD
 
 ## CLI
 1. ctr: user friendly 하지 않음.
-```
+```bash
 $ ctr
 
 # image를 끌어올 수 있음
@@ -32,7 +32,7 @@ $ ctr run docker.io/library/redis:alpine redis
 ```
 
 2. nerdctl: 도커와 아주 유사
-```
+```bash
 $ docker
 $ nerdctl
 
@@ -50,7 +50,7 @@ $ nerdctl run --name webserver -p 80:80 -d nginx
     컨테이너 제작을 할 필요가 없어서 디버깅만..
   https://kubernetes.io/docs/reference/tools/map-crictl-dockercli/
 
-```
+```bash
 $ crictl 
 
 $ crictl pull busybox
@@ -70,7 +70,7 @@ $ crictl pods    #도커에서는 이거 안됨ㅋㅋ
 > 분산되고 신뢰할 수 있는 k-v스토어입니다. 단순하고 안전하며 신속하죠.   
 > k-v 형식과 데이터베이스 형식 차이
 
-Install ETCD(2:50)
+## Install ETCD(2:50)
 1. Download Binaries   
 `$ curl -L https://github.com/etcd-io/etcd/releases/download/v3.3.11/etcd-v3.3.11-linux-amd64.tar.gz -o etcd-v3.3.11-linux-amd64.tar.gz`
 3. Extract   
@@ -80,8 +80,8 @@ Install ETCD(2:50)
 
   default port: 2379 
 
-CLI
-```
+## CLI
+```bash
 $ ./etcdctl    #help
 $ ./etcdctl set key1 value1
 $ ./etcdctl get key1
@@ -90,7 +90,7 @@ $ ./etcdctl get key1
 ETCDCTL Versions
   etcdctl은 2개의 api 버전을 가진다. v2와 v3를 가지는데 내가 어떤 버전을 사용하고 싶은지에 따라 version확인 필수
 
-```  
+```bash
 $ ./etcdctl --version
 $ ETCDCTL_API=3 ./etcdctl version
 ```
@@ -102,7 +102,7 @@ kubectl을 사용할 때 얻게 되는 모든 정보는 ETCD server에서 얻을
 etcd listen server 기본 port: 2379
 
 kubeadm을 통해 설치할 수 있다.
-```
+```bash
 $ kubectl get pods -n kube-system
 $ kubectl exec etcd-master -n kube-system etcdctl get / --prefix -keys-only
 ```
@@ -127,12 +127,12 @@ user -(`kubectl get nodes`)-> kube-apiserver -> ETCD CLUSTER 에서 데이터를
   6. Kubelet
 
 View api-server options - kubeadm
-```
+```bash
 $ cat /etc/kubernetes/manifests/kube-apiserver.yaml
 ```
 
 View api-server options
-```
+```bash
 $ cat /etc/systemd/system/kube-apiserver.service
 $ ps -aux | grep kube-apiserver
 ```
@@ -169,7 +169,7 @@ Replication-Controller
   1. Filter Nodes
   2. Rank Nodes: 스케쥴러가 우선순위 함수를 통해 점수를 매김. (ex 설치 후 남은 리소스)
   
-```
+```bash
 $ cat /etc/kubernetes/manifests/kube-scheduler.yaml
 $ pa -aux | grep kube-scheduler 
 ```
@@ -182,7 +182,7 @@ $ pa -aux | grep kube-scheduler
 kubeadm 은 kubelet을 자동으로 설치하지 않음   
 워커노드에 수동으로 설치   
 
-```
+```bash
 $ pa -aux | grep kubelet
 ```
 
@@ -201,12 +201,12 @@ db에 접근하는 좋은 방법은 service를 이용하는 것.
 	  - 그래서 kube proxy를 사용하는 겁니다~
  
 ## Installing kube-proxy
-```
+```bash
 $ wget https://storage.googleapis.com/kuber....
 ```
 
 ## kubeadm는 각 노드에 kube-proxy pod를 배포
-```
+```bash
 $ kubectl get pods -n kube-system | grep kube-proxy
 $ kubectl get daemonset -n kube-system | grep kube-proxy
 ```
@@ -225,7 +225,7 @@ k8s에서 만들 수 있는 가장 작은 단위
 ## pod 하나에 여러 개의 container가 들어갈 수 있다.
 로그 수집 container라든지, 사용자 data업로드 container라든지   
 아래는 여러 컨테이너가 들어간 예시
-```
+```bash
 $ kubectl get po -n test
 NAME	READY	STATUS	RESTARTS	AGE
 pod1	3/3 ◀	Running	0			10m
@@ -242,17 +242,17 @@ pod1	3/3 ◀	Running	0			10m
 
 ## pod 배포
 1. 이 명령이 실제로 하는 일은 포드를 생성해 Docker 컨테이너를 배포하는 겁니다
-```
+```bash
 $ kubectl run nginx
 ```
 
 2. 이미지 명시해서 지정 가능. 명시하지 않으면 Docker Hub에서 검색하는 것으로 간주
-```
+```bash
 $ kubectl run nginx --image nginx
 ```
 
 3. 파드 보십셔
-```
+```bash
 $ kubectl get po
 ```
 
@@ -284,7 +284,7 @@ object의 종류(Pod, Service, ReplicaSet, Deployment 등)
 
 ## metadata
 pod-definition.yaml
-```
+```yaml
 apiVersion: v1       ─── String
 kind: Pod            ─── String
 metadata:            ┐
@@ -296,7 +296,7 @@ spec:
 ```
 
 label을 통해서 리소스를 구분하고, 선택적으로 그룹화하는 방법을 제공
-```
+```bash
 $ kubectl get <리소스> -l app=myapp,type=front-end
 $ kubectl get pods -o wide
 $ kubectl desrribe po <파드>
@@ -308,7 +308,7 @@ k8s로 그 object와 관련된 추가 정보를 제공
 spec은 사전 형식임
 
 예시) pod를 만들 때, container 하나만 넣기 때문에 쉬움
-```
+```yaml
 spec:
   containers:           # List/Array
     - name: nginx-container
@@ -317,7 +317,7 @@ spec:
 ```	
 
 ■ Commands
-```
+```bash
 $ kubectl get po
 $ kubectl desribe po myapp-pod
   # 언제 만들어졌는지
@@ -356,6 +356,6 @@ $ kubectl desribe po myapp-pod
   - 라이브 개체에 있다.
   - 이렇게 적용된 구성은 따로 저장하지 않는다.
   - (TODO)아래 명령어로 확인하는게 맞는지 확인 필요
-```
+```bash
 $ kubectl get pod <개체> -oyaml | grep last-applied-configuration -A 20
 ```
