@@ -326,3 +326,36 @@ $ kubectl desribe po myapp-pod
   # 관련 events
 ```
 
+
+- - -
+# 48. Kubectl Apply Command
+> kubectl 명령 원리에 관해 좀 더 알아보자   
+> 내부적으로 명령이 어떻게 작동하는지?
+
+## Kubectl Apply
+- 고려 대상
+1. local file
+2. Last applied Configuration: 마지막 응용 구성(JSON 형식)   
+(라이브개체의 metadata.annotations.kubectl.kubernetes.io/last-applied-configuration)
+3. kubernetes: 라이브 개체(in kubernetes memory)
+
+- 개체가 존재하지 않으면   
+=> 개체 생성
+
+- 개체가 존재하면   
+=> Live object configuration 참조
+
+|상황              |설명|
+|:-----------------|:---|
+|로컬파일 값 수정  |라이브 개체값과 다르기 때문에 변경|
+|로컬파일 필드 삭제|마지막 적용 구성과 비교하여 없는 걸 알아냄|
+
+참고 링크: https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/
+
+- 마지막으로 적용된 구성
+  - 라이브 개체에 있다.
+  - 이렇게 적용된 구성은 따로 저장하지 않는다.
+  - (TODO)아래 명령어로 확인하는게 맞는지 확인 필요
+```
+$ kubectl get pod <개체> -oyaml | grep last-applied-configuration -A 20
+```
