@@ -185,3 +185,144 @@ kubeadm 은 kubelet을 자동으로 설치하지 않음
 ```
 $ pa -aux | grep kubelet
 ```
+
+
+- - -  
+# 20. kube proxy
+
+## kube proxy
+Kube-proxy는 쿠버네티스 클러스터의 각 노드에서 실행되는 프로세스   
+노드에서 iptables 규칙을 만들어 service IP로 트래픽을 전송
+
+db에 접근하는 좋은 방법은 service를 이용하는 것.
+  - cluster에 service를 노출
+  - service는 실제가 아니라 가상임(pod같은 컨테이너가 아님)   
+      - interface도 없고 listening proces도 없음   
+	  - 그래서 kube proxy를 사용하는 겁니다~
+ 
+## Installing kube-proxy
+```
+$ wget https://storage.googleapis.com/kuber....
+```
+
+## kubeadm는 각 노드에 kube-proxy pod를 배포
+```
+$ kubectl get pods -n kube-system | grep kube-proxy
+$ kubectl get daemonset -n kube-system | grep kube-proxy
+```
+
+
+- - -
+# 21. Recap - pods
+
+## pod
+k8s에서 만들 수 있는 가장 작은 단위   
+
+사용량이 많아지면/적어지면 k8s에서 pod를 늘리든/줄이든 node를 늘리든/줄이든 한다(설정 가능)
+  - pod 관련은 hpa 설정이 있어요
+  - node는 모르겠음
+
+## pod 하나에 여러 개의 container가 들어갈 수 있다.
+로그 수집 container라든지, 사용자 data업로드 container라든지   
+아래는 여러 컨테이너가 들어간 예시
+```
+$ kubectl get po -n test
+NAME	READY	STATUS	RESTARTS	AGE
+pod1	3/3 ◀	Running	0			10m
+```
+
+## pod 내부에서는 localhost 통신을 할 수 있음. 
+- port로만 구분하세요   
+- 저장소도 공유할 수 있음   
+
+> pod를 쓰는 이유는 container간의 네트워크 연결을 쉽게 하기 위해서   
+> 응용 프로그램 컨테이너의 상태를 모니터링   
+> k8s pod는 이 모든 것을 무료로 해줍니다
+
+
+## pod 배포
+1. 이 명령이 실제로 하는 일은 포드를 생성해 Docker 컨테이너를 배포하는 겁니다
+```
+$ kubectl run nginx
+```
+
+2. 이미지 명시해서 지정 가능. 명시하지 않으면 Docker Hub에서 검색하는 것으로 간주
+```
+$ kubectl run nginx --image nginx
+```
+
+3. 파드 보십셔
+```
+$ kubectl get po
+```
+
+
+- - -
+# 22. Pods with YAML
+
+## yaml
+k8s는 yaml 파일을 pods, replicas, deployments, services   
+등 objects(개체) 생성을 위한 입력으로 사용
+
+쿠버네테스 정의 파일은 항상 4개의 상위 레벨 필드를 포함합니다(필수 필드)   
+apiVersion, kind, metadata, spec
+
+## apiVersion
+개체를 생성할 때 사용하는 쿠버네테스 API 버전   
+
+|KIND      |VERSION|
+|:---------|:------|
+|Pod       |v1     |
+|Service   |v1     |
+|ReplicaSet|apps/v1|
+|Deployment|apps/v1|
+	
+이 분야에서 가능한 값은 apps/v1beta, extensions/v1beta 등이 있는데 나중에 ㄱㄱ
+
+##  kind
+object의 종류(Pod, Service, ReplicaSet, Deployment 등)
+
+## metadata
+pod-definition.yaml
+```
+apiVersion: v1       ─── String
+kind: Pod            ─── String
+metadata:            ┐
+  name: myapp-pod    │
+  labels:            ├── Dictionary
+    app: myapp       │
+  type: front-end    ┘
+spec:
+```
+
+label을 통해서 리소스를 구분하고, 선택적으로 그룹화하는 방법을 제공
+```
+$ kubectl get <리소스> -l app=myapp,type=front-end
+$ kubectl get pods -o wide
+$ kubectl desrribe po <파드>
+```
+
+## spec
+k8s로 그 object와 관련된 추가 정보를 제공   
+정해진 양식이 없고 object마다 달라서 doc참조 바람   
+spec은 사전 형식임
+
+예시) pod를 만들 때, container 하나만 넣기 때문에 쉬움
+```
+spec:
+  containers:           # List/Array
+    - name: nginx-container
+      image: nginx      # docker 저장소에 있는 이미지
+    - name: ...
+```	
+
+■ Commands
+```
+$ kubectl get po
+$ kubectl desribe po myapp-pod
+  # 언제 만들어졌는지
+  # 어떤 라벨
+  # 어떤 container들로 구성되었는지
+  # 관련 events
+```
+
