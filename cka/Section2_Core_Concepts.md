@@ -326,6 +326,110 @@ $ kubectl desribe po myapp-pod
   # 관련 events
 ```
 
+- - -
+# 41. Namespaces
+
+## 개요
+|namespace     |description|
+|:-------------|:----------|
+|default       |클러스터가 처음 설정되면 쿠버네테스가 자동으로 생성|
+|kube-system   |네트워킹 솔루션, DNS 서비스, 등    |
+|kube-public   |모든 사용자가 사용할 수 있는 리소스|
+
+## Isolation
+- namespace로 리소르를 분리해서 관리
+
+## resource limit
+- namespce 각각에 리소스 할당량을 할당할 수도 있음
+- 할당량만 사용, 한도 초과 x
+
+## DNS
+- namespace 의 리소스도 단순히 이름으로 부를 수 있음
+```bash
+mysql.connect("db-service")
+mysql.connect("db-service.dev.svc.cluster.local")
+```
+
+이게 가능한 이유는 서비스가 생성될 때 DNS 항목이 자동으로 이 포맷에 추가되기 때문
+cluster.local: k8s cluster의 기본 도메인 이름
+svc: 서비스를 위한 하위 도메인
+dev: namespace
+db-service: service name
+
+## 응용
+```bash
+$ kubectl get pods
+$ kubectl get pods --namespace=kube-system
+```
+
+```yml
+$ cat pod-definitaion.yml
+apiVersion: v1
+kind: Pod
+
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+```
+
+리소스 생성
+```bash
+$ kubectl create -f pod-definition.yml    # 기본 ns에 생성
+$ kubectl create -f pod-definition.yml --namespace=dev
+```
+
+항상 같은 ns에 생성되게 하려면 `metadata.namespace: dev` 를 추가
+
+## namespace 생성
+```
+$ cat namespace-dev.yml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  
+$ kubectl create -f namespace-dev.yml
+```
+
+```
+$ kubectl create namespace dev
+```
+
+## kube config
+namespace 옵션 없이 명령어 수행하게 설정
+```
+$ kubectl config set-context $(kubectl config current-context) --namespace=dev
+```
+
+```
+$ kubectl get pods --all-namespaces
+```
+
+## Resource Quota
+```
+$ cat Compute-quota.yml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: dev
+spec:
+  hard:
+    pods: "10"
+	requests.cpu: "4"
+	requests.memory: 5Gi
+	limits.cpu: "10"
+	limits.memory: 10Gi
+	
+$ kubectl create -f compute-quota.yml
+```
+
 
 - - -
 # 48. Kubectl Apply Command
