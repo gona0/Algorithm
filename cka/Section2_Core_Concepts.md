@@ -326,6 +326,119 @@ $ kubectl desribe po myapp-pod
   # 관련 events
 ```
 
+- - - 
+# 29. ReplicaSets
+- controller: k8s의 두뇌. kubelet을 모니터링하고 그에 따라 반응하는 프로세스   
+- ReplicaSets controller: k8s클러스터에 있는 단일 pod의 다중 인스턴스를 실행하도록 도와줌   
+- DR: app이 down됬을 때, 다른 하나에서 응용 프로그램이 실행될 수 있다. 고가용성을 제공
+
+## pod 고장 시 동작함
+- pod가 하나뿐이어도 ReplicaSets controller는 pod(old)가 고장 났을 때 자동으로 pod(new)를 불러오게 해줌
+- 특정 pod가 항상 실행되도록 보장합니다(1개든 100개든 - 개수 제한 아에 없진 않을텐데 확인 필요)
+
+## LB & Scaling
+- ResplicaSets controller는 서로 다른 node의 여러 pod에 걸쳐 부하를 분산하는 데 도움이 됨
+- 수요가 증가하면 앱 스케일도 조정할 수 있음
+
+## Replication Controller vs Replica Set
+- 이미 생성된 기존의 포드를 모니터하는 데 사용할 수 있음
+- Replication Controller(구식) -> Replica Set(석시딩유)
+- RS가 복제를 설정하는 새로운 권장 방법
+- 따라서 앞으로 모든 데모와 구현에서 RS를 사용할 예정
+
+### Replication Controller
+RC는 parent, Pod는 child
+
+<pod-definition.yml>
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+```
+
+<rc-definition.yml>
+```bash
+# 다른 것 처럼 4개의 섹션으로 구성
+$ cat rc-definition.yml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: myapp-rc
+  labels:
+    app: myapp
+	type: front-end
+spec:
+  # 가장 중요한 부분
+  # spec.template을 만들어서 pod template을 제공하게 함
+  template:
+    # pod-definition.yml의 metadata와 spec 부분을 그대로 넣는다.
+	
+  replicas: 3
+```
+
+```bash
+$ kubectl create -f rc-definition.yml
+$ kubectl get replicationcontroller    # kubectl get rc?
+$ kubectl get po
+# 이름 prefix가 myapp-rc 인 pod가 3개 있음
+```
+
+### Replica Set
+<rs-definition.yml>
+```bash
+$ cat rc-definition.yml
+apiVersion: apps/v1    # ◀◀◀◀◀
+kind: ReplicaSet    # ◀◀◀◀◀
+metadata:
+  name: myapp-rc
+  labels:
+    app: myapp
+	type: front-end
+spec:
+  template:
+    # pod-definition.yml의 metadata와 spec 부분을 그대로 넣는다.
+	
+  replicas: 3
+  selector:       # ◀◀◀◀◀ rc와 rs의 큰 차이점. rs에서는 required. rc에서 사용 가능하지만 opt.
+                  # 같은 selector를 가지고 있는 기존의 pod도 고려해서 복제함
+    matchLables:
+      type: front-end
+      # 이거 말고 다른 옵션들도 많음. rc는 지원하지 않음.
+```
+
+```bash
+$ kubectl create -f rs-definition.yml
+$ kubectl get replicaset    # kubectl get rs
+```
+
+
+## Labels and Selectors
+- Labels: rs가 어느 pod를 모니터할지 결정하게 해주는 것
+
+## replica 개수 변경하는 법
+```bash
+# 1. <file>.spec.replicas = 6 변경 후
+$ kubectl replace -f rs-definition.yml
+
+# 2. 
+$ kubectl scale --replicas=6 -f rs-definition.yml
+
+# 3. 깔려있는 replicaset에서 찾기
+$ kubectl scale --replicas=6 replicaset my-app-rs
+
+# 4. 자동으로 스케일링
+# hpa, 다음 기회에 
+```
+
+
 - - -
 # 41. Namespaces
 
