@@ -465,6 +465,75 @@ $ kubectl get pods
 - 기본적으론 rs과 deployment 사이에 큰 차이는 없음
 - deployment라는 resource를 만든 것 정도 차이?
 
+- - - 
+# 36. Services
+- app 안과 박의 다양한 구성 요소 간의 통신을 가능하게 함
+- app2app 또는 app2user 연결을 도와줌
+- user -(svc)- app1 -(svc)- app2 -(svc)- db
+```
+user(192.168.1.10)   
+    │   
+┌─┬───────────┬─────┐   
+│  192.168.1.2      │   
+│                   │   
+│ pod:10.244.0.2    │   
+│      └─ 10.244.0.0│   
+└───────────────────┘
+```
+> pod가 바라보고있는 10.244.0.0을 user가 가는 방법이 없을까?   
+> 노드 내에서 가운데 중재역할이 필요해!   
+> => 그게 서비스다
+```
+# nodeport
+$ curl http://192.168.1.2:30008
+```
+
+## Services Types
+|TYPE       |DESCRIPTION|
+|:----------|:------|
+|NodePort   |node의 port로 서비스를 엑세스 할 수 있게끔  |
+|ClusterIP  |cluster 내부에서 vip를 생성하여 서비스끼리 통신하게끔  |
+|LoadBalance|말 그대로 LB|
+
+## Service: NodePort
+- node port(30008) - service - service port(80) - pod port(80) - pod   
+위 예제에서
+- pod port: target port(80)
+- service port: port(80)
+- node port: 외부랑 연결(30000~32767)
+
+<svc-definition.yml>
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-svc
+spec:    # 가장 중요함...
+  type: NodePort
+  ports:
+    - targetPort: 80    # opt(default: spec.ports.port)
+      port: 80          # mandatory
+      nodePort: 30008   # opt(default: 가능 값에서 자유롭게 할당)
+      
+  selector:         # pod에 있는 label임. 이걸 통해 pod를 구체화 시켜줌
+    app: myapp
+    type: front-end
+```
+
+```bash
+$ kubectl create -f service-definition.yml
+$ kubectl get services
+```
+### 유스케이스
+- 한 노드에 같은 레이블의 파드 다수
+    - 모든 pod에 연결해 준다. 자동 lb임. 무작위 알고리즘
+- 여러 노드에 같은 레이블의 파드 1개씩
+    - svc가 여러 노드에 걸쳐서 생성
+    - targetPort를 같은 노드 포트로 매핑함
+    - svc관점에서는 그냥 하나의 큰 노드처럼 행동
+
+
+
 - - -
 # 41. Namespaces
 
