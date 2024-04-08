@@ -438,6 +438,32 @@ $ kubectl scale --replicas=6 replicaset my-app-rs
 # hpa, 다음 기회에 
 ```
 
+- - -
+# 32. Deployments
+$$ Replica Set \subset Deployments $$
+
+## Rolling upgrade
+- 인스턴스를 업그레이드할 때, 전부 한 번에 업그레이드할 필요는 없음
+- 사용자가 우리 앱에 접속하는 데 영향을 줄 수 있으니 하나씩 업그레이드
+
+## Definition
+<deployment-definition.yml>
+```yml
+apiVersion: apps/v1
+kind: Deployment
+#밑에는 rs과 똑같
+```
+
+```
+# deploy -> rs -> po
+$ kubectl create -f deployment-definition.yml
+$ kubectl get deployments
+$ kubectl get replicaset
+$ kubectl get pods
+```
+
+- 기본적으론 rs과 deployment 사이에 큰 차이는 없음
+- deployment라는 resource를 만든 것 정도 차이?
 
 - - -
 # 41. Namespaces
