@@ -532,6 +532,53 @@ $ kubectl get services
     - targetPort를 같은 노드 포트로 매핑함
     - svc관점에서는 그냥 하나의 큰 노드처럼 행동
 
+- - - 
+# 37. Services - Cluster IP
+
+<svc-definition.yml>
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-end
+spec:
+  type: ClusterIP    # Service의 default type
+  ports:
+    - targetPort: 80
+      port: 80
+  selector:
+    app: myapp
+    type: back-end
+```
+
+- - - 
+# 38. Services - Loadbalancer
+
+node 여러개에 pod가 여러개 들어있을 때, nodeport로 하기에는 에로사항   
+예를들면 node1에 pod-a1, node2에 pod-a2, pod-a3를 둔다면 각각에 접근하기 위해서 nodeIP:nodeport를 몇번을 입력해야해
+
+<svc-definition.yml>
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  type: LoadBalancer
+  ports:
+    - targetPort: 80
+      port: 80
+      nodePort: 30008
+```
+
+|목적      |service type|
+|:---------|:------|
+|클러스터 내부 간 통신    |ClusterIP     |
+|클러스터 외부와 내부 통신|NodePort     |
+|클라우드 벤더의 로드밸러서 이용|LoadBalancer|
+|클라우드 외부로의 프록시 역할|ExternalName|
+
+LoadBalancer로 설정해도 바닐라k8s에서는 nodeport처럼 동작한다고 함
 
 
 - - -
@@ -637,7 +684,10 @@ spec:
 	
 $ kubectl create -f compute-quota.yml
 ```
-
+- - -
+# 44. Imperative vs Declarative
+Imperative 접근: 단계별로 알려주는 것
+declarative(명령적) 접근: 어떻게가 아니라 무엇을 할 지를 명시하는 것
 
 - - -
 # 48. Kubectl Apply Command
