@@ -210,6 +210,7 @@ $ wget https://storage.googleapis.com/kuber....
 $ kubectl get pods -n kube-system | grep kube-proxy
 $ kubectl get daemonset -n kube-system | grep kube-proxy
 ```
+바닐라 k8s에는 있지만, eks나 oc에서는 없음. 플랫폼이 자기 마음대로 만들었나봐.
 
 
 - - -
@@ -220,7 +221,8 @@ k8s에서 만들 수 있는 가장 작은 단위
 
 사용량이 많아지면/적어지면 k8s에서 pod를 늘리든/줄이든 node를 늘리든/줄이든 한다(설정 가능)
   - pod 관련은 hpa 설정이 있어요
-  - node는 모르겠음
+  - node는 모르겠음: 아래 링크에서 보면 플랫폼에서 증설해주는 거지 온프렘에서는 의미 없는 듯
+  - [https://blog.yevgnenll.me/k8s/pod-cluster-node-auto-scaling]https://blog.yevgnenll.me/k8s/pod-cluster-node-auto-scaling
 
 ## pod 하나에 여러 개의 container가 들어갈 수 있다.
 로그 수집 container라든지, 사용자 data업로드 container라든지   
@@ -278,6 +280,7 @@ apiVersion, kind, metadata, spec
 |Deployment|apps/v1|
 	
 이 분야에서 가능한 값은 apps/v1beta, extensions/v1beta 등이 있는데 나중에 ㄱㄱ
+v1으로 되어있다면 **stable**. api 정식버전. 뭔가 아직이면 alpha, beta 등등..
 
 ##  kind
 object의 종류(Pod, Service, ReplicaSet, Deployment 등)
@@ -291,7 +294,7 @@ metadata:            ┐
   name: myapp-pod    │
   labels:            ├── Dictionary
     app: myapp       │
-  type: front-end    ┘
+    type: front-end  ┘
 spec:
 ```
 
